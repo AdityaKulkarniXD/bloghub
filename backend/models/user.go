@@ -1,13 +1,12 @@
-package models
+package database
 
 import (
-	"time"
+    "gorm.io/gorm"
 )
 
 type User struct {
-	ID        uint      `gorm:"primaryKey" json:"id"`
-	Name      string    `json:"name"`
-	Email     string    `gorm:"unique" json:"email"`
-	Password  string    `json:"password"` // You’ll hash it before saving
-	CreatedAt time.Time `json:"created_at"`
+    gorm.Model
+    Name     string `json:"name"`
+    Email    string `json:"email" gorm:"uniqueIndex;not null"`
+    Password string `json:"password" gorm:"not null"`
 }

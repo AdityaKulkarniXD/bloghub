@@ -1,34 +1,34 @@
 package database
 
 import (
-	"fmt"
-	"log"
-	"os"
+    "fmt"
+    "log"
+    "os"
 
-	"github.com/AdityaKulkarniXD/bloghub/backend/models"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+    "gorm.io/driver/postgres"
+    "gorm.io/gorm"
 )
 
 var DB *gorm.DB
 
 func ConnectDB() {
-	dsn := os.Getenv("DATABASE_URL")
-	if dsn == "" {
-		log.Fatal("❌ DATABASE_URL is not set in the environment")
-	}
+    dsn := os.Getenv("DATABASE_URL")
+    db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+    if err != nil {
+        log.Fatal("Failed to connect to database:", err)
+    }
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		log.Fatalf("❌ Failed to connect to database: %v", err)
-	}
+    DB = db
+    fmt.Println("Database connected successfully!")
 
-	// Auto-migrate the models
-	err = db.AutoMigrate(&models.User{}, &models.Post{})
-	if err != nil {
-		log.Fatalf("❌ Failed to migrate models: %v", err)
-	}
+    // Migrate models here to create tables automatically
+    MigrateModels()
+}
 
-	fmt.Println("✅ Database connected and models migrated")
-	DB = db
+func MigrateModels() {
+    // Import your models here to migrate
+    err := DB.AutoMigrate(&User{}, &Post{})
+    if err != nil {
+        log.Fatal("Failed to migrate database models:", err)
+    }
 }

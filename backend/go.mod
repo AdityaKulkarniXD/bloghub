@@ -1,3 +1,3 @@
-module github.com/AdityaKulkarniXD/bloghub-backend
+module github.com/AdityaKulkarniXD/backend
 
 go 1.24.2

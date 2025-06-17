@@ -1,29 +1,34 @@
 package database
 
 import (
-    "fmt"
-    "log"
-    "os"
+	"fmt"
+	"log"
+	"os"
 
-    "gorm.io/driver/postgres"
-    "gorm.io/gorm"
-    "github.com/joho/godotenv"
+	"github.com/AdityaKulkarniXD/bloghub/backend/models"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 var DB *gorm.DB
 
-func Connect() {
-    err := godotenv.Load()
-    if err != nil {
-        log.Fatal("Error loading .env file")
-    }
+func ConnectDB() {
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		log.Fatal("❌ DATABASE_URL is not set in the environment")
+	}
 
-    dsn := os.Getenv("DATABASE_URL")
-    db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-    if err != nil {
-        log.Fatal("Failed to connect to database:", err)
-    }
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("❌ Failed to connect to database: %v", err)
+	}
 
-    fmt.Println("Database connected ✅")
-    DB = db
+	// Auto-migrate the models
+	err = db.AutoMigrate(&models.User{}, &models.Post{})
+	if err != nil {
+		log.Fatalf("❌ Failed to migrate models: %v", err)
+	}
+
+	fmt.Println("✅ Database connected and models migrated")
+	DB = db
 }

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/AdityaKulkarniXD/backend/database"
-	"github.com/AdityaKulkarniXD/backend/routes"
+	"github.com/AdityaKulkarniXD/bloghub/backend/database"
+	"github.com/AdityaKulkarniXD/bloghub/backend/routes"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 )

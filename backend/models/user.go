@@ -1,12 +1,11 @@
-package database
+package models
 
-import (
-    "gorm.io/gorm"
-)
+import "gorm.io/gorm"
 
 type User struct {
     gorm.Model
     Name     string `json:"name"`
-    Email    string `json:"email" gorm:"uniqueIndex;not null"`
-    Password string `json:"password" gorm:"not null"`
+    Email    string `gorm:"unique" json:"email"`
+    Password string `json:"password"`
+    Posts    []Post
 }

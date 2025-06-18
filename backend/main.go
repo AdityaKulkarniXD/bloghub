@@ -1,32 +1,17 @@
 package main
 
 import (
-    "github.com/gofiber/fiber/v2"
-    "github.com/joho/godotenv"
-    "log"
-    "os"
-
-    "github.com/AdityaKulkarniXD/bloghub/backend/database"
-    "github.com/AdityaKulkarniXD/bloghub/backend/routes"
+	"github.com/AdityaKulkarniXD/bloghub/backend/database"
+	"github.com/AdityaKulkarniXD/bloghub/backend/routes"
+	"github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-    // Load env vars
-    if err := godotenv.Load(); err != nil {
-        log.Println("Warning: .env file not found, relying on environment variables")
-    }
+	godotenv.Load()
+	app := fiber.New()
+	database.ConnectDB()
+	routes.SetupRoutes(app)
 
-    // Connect to DB
-    database.ConnectDB()
-
-    app := fiber.New()
-
-    routes.SetupRoutes(app)
-
-    port := os.Getenv("PORT")
-    if port == "" {
-        port = "8080"
-    }
-
-    log.Fatal(app.Listen(":" + port))
+	app.Listen(":8080")
 }

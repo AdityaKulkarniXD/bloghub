@@ -1,29 +1,27 @@
 package routes
 
 import (
-	"github.com/AdityaKulkarniXD/bloghub/backend/database"
-	"github.com/AdityaKulkarniXD/bloghub/backend/models"
-	"github.com/gofiber/fiber/v2"
-	"golang.org/x/crypto/bcrypt"
 	"os"
 	"time"
 
+	"github.com/AdityaKulkarniXD/bloghub/backend/database"
+	"github.com/AdityaKulkarniXD/bloghub/backend/models"
+	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func Register(c *fiber.Ctx) error {
 	var data map[string]string
-
 	if err := c.BodyParser(&data); err != nil {
-		return c.Status(400).JSON(fiber.Map{"error": "Cannot parse JSON"})
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid request"})
 	}
 
-	password, _ := bcrypt.GenerateFromPassword([]byte(data["password"]), 14)
-
+	hash, _ := bcrypt.GenerateFromPassword([]byte(data["password"]), 14)
 	user := models.User{
 		Name:     data["name"],
 		Email:    data["email"],
-		Password: string(password),
+		Password: string(hash),
 	}
 
 	if err := database.DB.Create(&user).Error; err != nil {
@@ -35,9 +33,8 @@ func Register(c *fiber.Ctx) error {
 
 func Login(c *fiber.Ctx) error {
 	var data map[string]string
-
 	if err := c.BodyParser(&data); err != nil {
-		return c.Status(400).JSON(fiber.Map{"error": "Cannot parse JSON"})
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid request"})
 	}
 
 	var user models.User
@@ -48,20 +45,18 @@ func Login(c *fiber.Ctx) error {
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data["password"])); err != nil {
-		return c.Status(401).JSON(fiber.Map{"error": "Invalid password"})
+		return c.Status(401).JSON(fiber.Map{"error": "Incorrect password"})
 	}
 
-	// JWT token generation
-	secret := os.Getenv("JWT_SECRET")
-	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":  user.ID,
 		"exp": time.Now().Add(time.Hour * 72).Unix(),
 	})
 
-	token, err := claims.SignedString([]byte(secret))
+	t, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Could not login"})
 	}
 
-	return c.JSON(fiber.Map{"message": "Login successful", "token": token})
+	return c.JSON(fiber.Map{"message": "Login successful", "token": t})
 }

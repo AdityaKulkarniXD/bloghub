@@ -7,46 +7,22 @@ import (
 )
 
 func CreatePost(c *fiber.Ctx) error {
+	user := c.Locals("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	userID := uint(claims["id"].(float64))
+
 	var post models.Post
 	if err := c.BodyParser(&post); err != nil {
-		return c.Status(400).JSON(fiber.Map{"error": "Cannot parse JSON"})
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid post"})
 	}
+	post.UserID = userID
 
-	if err := database.DB.Create(&post).Error; err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": "Could not create post"})
-	}
-
+	database.DB.Create(&post)
 	return c.JSON(post)
 }
 
 func GetPosts(c *fiber.Ctx) error {
 	var posts []models.Post
-	database.DB.Preload("User").Find(&posts)
+	database.DB.Find(&posts)
 	return c.JSON(posts)
-}
-
-func GetPost(c *fiber.Ctx) error {
-	id := c.Params("id")
-	var post models.Post
-	database.DB.First(&post, id)
-	return c.JSON(post)
-}
-
-func UpdatePost(c *fiber.Ctx) error {
-	id := c.Params("id")
-	var post models.Post
-	database.DB.First(&post, id)
-
-	if err := c.BodyParser(&post); err != nil {
-		return c.Status(400).JSON(fiber.Map{"error": "Cannot parse JSON"})
-	}
-
-	database.DB.Save(&post)
-	return c.JSON(post)
-}
-
-func DeletePost(c *fiber.Ctx) error {
-	id := c.Params("id")
-	database.DB.Delete(&models.Post{}, id)
-	return c.SendStatus(204)
 }
